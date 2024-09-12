@@ -30,6 +30,8 @@ jobs:
 
       - name: Set up Docker Compose
         run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
           cd django-repo
           docker-compose up --build -d
 
