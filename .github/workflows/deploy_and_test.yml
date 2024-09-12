@@ -1,72 +1,51 @@
 name: Deploy and Test
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0'
 
 jobs:
-  build-and-deploy:
+  test:
     runs-on: ubuntu-latest
+    services:
+      website:
+        image: example_site_image:latest
+        ports:
+          - 8000:8000
+        options: >-
+          --env DJANGO_SETTINGS_MODULE=your_project.settings
 
     steps:
-      - name: Checkout site repository
+      - name: Checkout website repository
         uses: actions/checkout@v3
         with:
           repository: Gygamyt/example_site_for_pipeline
-          path: django-repo
+          path: website
+
+      - name: Build website Docker image
+        run: |
+          cd website
+          docker build -t example_site_image:latest .
+        env:
+          DOCKER_BUILDKIT: 1
 
       - name: Checkout test framework repository
         uses: actions/checkout@v3
         with:
           repository: Gygamyt/example_test_framework_for_pipeline
-          path: playwright-repo
+          path: test-framework
 
-      - name: Update system and install dependencies
+      - name: Build test framework Docker image
         run: |
-          sudo apt-get update
-          sudo apt-get upgrade -y
-          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+          cd test-framework
+          docker build -t test_framework_image:latest .
+        env:
+          DOCKER_BUILDKIT: 1
 
-      - name: Install Docker
+      - name: Run tests
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            apt-transport-https \
-            ca-certificates \
-            curl \
-            gnupg-agent \
-            software-properties-common
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          sudo add-apt-repository \
-             "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-             $(lsb_release -cs) \
-             stable"
-          sudo apt-get update
-          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-
-      - name: Build and run Docker containers
-        run: |
-          cd playwright-repo
-          docker-compose up --build -d
-
-      - name: Run Playwright tests
-        run: |
-          cd playwright-repo
-          npx playwright test
-
-      - name: Tear down
-        run: |
-          cd playwright-repo
-          docker-compose down
+          docker run --network="host" test_framework_image:latest
+        env:
+          BASE_URL: http://localhost:8000
