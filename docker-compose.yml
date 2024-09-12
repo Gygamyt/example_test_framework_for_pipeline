@@ -3,7 +3,7 @@ version: '3.8'
 services:
   django:
     build:
-      context: ./django-repo
+      context: ../example_site_for_pipeline
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
