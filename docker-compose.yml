@@ -1,0 +1,24 @@
+version: '3'
+services:
+  django:
+    image: django-image
+    build:
+      context: django-repo
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    networks:
+      - my-network
+
+  playwright:
+    image: mcr.microsoft.com/playwright
+    build:
+      context: playwright-repo
+      dockerfile: Dockerfile
+    depends_on:
+      - django
+    networks:
+      - my-network
+
+networks:
+  my-network:

@@ -1,4 +1,4 @@
-name: Deploy And Test
+name: Deploy and Test
 
 on:
   push:
@@ -12,68 +12,33 @@ on:
     - cron: '0 0 * * 0'
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout current repo
-        uses: actions/checkout@v3
-
-      - name: Clone other repository
+      - name: Checkout site repository
         uses: actions/checkout@v3
         with:
-          repository: MOCKMOCK
-          path: MOCKMOCK
+          repository: Gygamyt/example_site_for_pipeline
+          path: django-repo
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Checkout test framework repository
+        uses: actions/checkout@v3
         with:
-          python-version: '3.11'
+          repository: Gygamyt/example_test_framework_for_pipeline
+          path: playwright-repo
 
-      - name: Install Python dependencies
+      - name: Set up Docker Compose
         run: |
-          python -m pip install --upgrade pip
-          pip install -r MOCKMOCK/requirements.txt
-
-      - name: Run Migrations
-        run: |
-          cd MOCKMOCK/src
-          python manage.py migrate
-
-      - name: Collect Static Files
-        run: |
-          cd MOCKMOCK/src
-          python manage.py collectstatic --noinput
-
-      - name: Start server
-        run: |
-          cd MOCKMOCK/src
-          python manage.py runserver 0.0.0.0:8000 &
-          sleep 10
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Install Node.js dependencies
-        run: |
-          cd #тут надо КУДА
-          npm install
+          cd django-repo
+          docker-compose up --build -d
 
       - name: Run Playwright tests
         run: |
-          cd #просто в репе, райт?
+          cd playwright-repo
           npx playwright test
 
-      - name: Upload Allure results
-        uses: actions/upload-artifact@v3
-        with:
-          name: allure-results
-          path: путь/к/папке/с/результатами
-
-      - name: Upload Allure Report
-        uses: actions/upload-artifact@v3
-        with:
-          name: allure-report
-          path: allure-report
+      - name: Tear down
+        run: |
+          cd django-repo
+          docker-compose down
