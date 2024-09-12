@@ -9,21 +9,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      website:
-        image: example_site_image:latest
-        ports:
-          - 8000:8000
-        options: >-
-          --env DJANGO_SETTINGS_MODULE=your_project.settings
 
     steps:
+      # Шаг 1: Проверка репозитория с сайтом
       - name: Checkout website repository
         uses: actions/checkout@v3
         with:
           repository: Gygamyt/example_site_for_pipeline
           path: website
 
+      # Шаг 2: Сборка Docker-образа для сайта
       - name: Build website Docker image
         run: |
           cd website
@@ -31,12 +26,14 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
 
+      # Шаг 3: Проверка репозитория с тестами
       - name: Checkout test framework repository
         uses: actions/checkout@v3
         with:
           repository: Gygamyt/example_test_framework_for_pipeline
           path: test-framework
 
+      # Шаг 4: Сборка Docker-образа для тестов
       - name: Build test framework Docker image
         run: |
           cd test-framework
@@ -44,8 +41,22 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
 
+      # Шаг 5: Запуск сайта
+      - name: Run website container
+        run: |
+          docker run -d --name website_container -p 8000:8000 example_site_image:latest
+        env:
+          DJANGO_SETTINGS_MODULE: your_project.settings
+
+      # Шаг 6: Запуск тестов
       - name: Run tests
         run: |
           docker run --network="host" test_framework_image:latest
         env:
           BASE_URL: http://localhost:8000
+
+      # Шаг 7: Остановка и удаление контейнера сайта
+      - name: Stop and remove website container
+        run: |
+          docker stop website_container
+          docker rm website_container
