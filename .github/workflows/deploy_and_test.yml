@@ -61,12 +61,12 @@ jobs:
           docker stop website_container
           docker rm website_container
 
-      # Шаг 8: Сохранение отчетов Playwright как артефактов
-      - name: Upload Playwright reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: playwright-reports
-          path: test-framework/test-results
+#      # Шаг 8: Сохранение отчетов Playwright как артефактов
+#      - name: Upload Playwright reports
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: playwright-reports
+#          path: test-framework/test-results
 
       # Шаг 9: Остановка и удаление контейнера тестов
       - name: Stop and remove test framework container
