@@ -9,7 +9,7 @@ test.describe('E2E UI', async () => {
 
     test.beforeEach(async ({browser}) => {
         page = await browser.newPage();
-        await page.goto('http://127.0.0.1:8000/');
+        await page.goto('/');
         pageManager = new PageManager(page);
     });
 
