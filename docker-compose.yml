@@ -1,24 +1,12 @@
-version: '3.8'
-
+version: '3'
 services:
-  django:
-    build:
-      context: ../example_site_for_pipeline
-      dockerfile: Dockerfile
+  website:
+    image: example_site_image:latest
     ports:
       - "8000:8000"
-    networks:
-      - app-network
-
-  playwright:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  test-framework:
+    image: test_framework_image:latest
     depends_on:
-      - django
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
+      - website
+    environment:
+      BASE_URL: http://website:8000

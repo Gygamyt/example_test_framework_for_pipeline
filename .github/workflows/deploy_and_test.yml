@@ -2,6 +2,7 @@ name: Deploy and Test
 
 on:
   workflow_dispatch:
+
   push:
     branches:
       - main
@@ -9,7 +10,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       # Шаг 1: Проверка репозитория с сайтом
       - name: Checkout website repository
@@ -41,22 +41,17 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
 
-      # Шаг 5: Запуск сайта
-      - name: Run website container
+      # Шаг 5: Запуск Docker Compose
+      - name: Run Docker Compose
         run: |
-          docker run -d --name website_container -p 8000:8000 example_site_image:latest
-        env:
-          DJANGO_SETTINGS_MODULE: your_project.settings
+          docker-compose up -d
 
       # Шаг 6: Запуск тестов
       - name: Run tests
         run: |
-          docker run --network="host" test_framework_image:latest
-        env:
-          BASE_URL: http://localhost:8000
+          docker-compose run --rm test-framework
 
-      # Шаг 7: Остановка и удаление контейнера сайта
-      - name: Stop and remove website container
+      # Шаг 7: Остановка и удаление контейнеров
+      - name: Stop and remove containers
         run: |
-          docker stop website_container
-          docker rm website_container
+          docker-compose down
