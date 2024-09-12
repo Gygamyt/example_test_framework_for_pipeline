@@ -60,3 +60,9 @@ jobs:
         run: |
           docker stop website_container
           docker rm website_container
+
+      # Шаг 8: Остановка и удаление контейнера тестов
+      - name: Stop and remove test framework container
+        run: |
+          docker stop test_framework_container
+          docker rm test_framework_container
