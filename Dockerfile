@@ -7,8 +7,5 @@ WORKDIR /app
 # Установка зависимостей
 RUN npm install
 
-# Создание директории для отчетов
-RUN mkdir -p /app/playwright-report
-
 # Запуск тестов с указанием директории для отчетов
-CMD ["npx", "playwright", "test", "--reporter=html", "--output=/app/playwright-report"]
+CMD ["npx", "playwright", "test", "--reporter=html"]
