@@ -52,6 +52,12 @@ jobs:
       - name: Run tests
         run: |
           docker run --network="host" --name test_framework_container test_framework_image:latest
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-reports
+          path: test-framework/playwright-report/
+
         env:
           BASE_URL: http://localhost:8000
 
@@ -61,12 +67,12 @@ jobs:
           docker stop website_container
           docker rm website_container
 
-      # Шаг 8: Сохранение отчетов Playwright как артефактов
-      - name: Upload Playwright reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: playwright-reports
-          path: test-framework/playwright-report/
+#      # Шаг 8: Сохранение отчетов Playwright как артефактов
+#      - name: Upload Playwright reports
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: playwright-reports
+#          path: test-framework/playwright-report/
 
       # Шаг 9: Остановка и удаление контейнера тестов
       - name: Stop and remove test framework container
