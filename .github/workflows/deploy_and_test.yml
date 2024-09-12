@@ -52,12 +52,6 @@ jobs:
       - name: Run tests
         run: |
           docker run --network="host" --name test_framework_container test_framework_image:latest
-      - uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: playwright-reports
-          path: test-framework/playwright-report/
-
         env:
           BASE_URL: http://localhost:8000
 
