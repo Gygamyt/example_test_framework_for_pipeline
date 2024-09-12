@@ -8,4 +8,4 @@ WORKDIR /app
 RUN npm install
 
 # Запуск тестов
-CMD ["npx", "playwright", "test"]
+CMD ["npx", "playwright", "test", "--reporter=html"]
