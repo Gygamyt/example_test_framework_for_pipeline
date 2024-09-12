@@ -64,7 +64,7 @@ jobs:
       # Шаг 7.5: Проверка содержимого директории отчетов
       - name: List report files
         run: |
-          ls -la test-framework/playwright-report
+          ls -la test-framework/playwright-report/
 
       # Шаг 8: Сохранение отчетов Playwright как артефактов
       - name: Upload Playwright reports
