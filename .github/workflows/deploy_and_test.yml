@@ -30,8 +30,6 @@ jobs:
 
       - name: Set up Docker Compose
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
           cd playwright-repo
           docker-compose up --build -d
 
@@ -42,5 +40,5 @@ jobs:
 
       - name: Tear down
         run: |
-          cd django-repo
+          cd playwright-repo
           docker-compose down
