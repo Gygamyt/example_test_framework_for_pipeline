@@ -64,7 +64,11 @@ jobs:
       - name: Wait for tests to complete
         run: |
           docker wait test_framework_container
-      
+
+      # Шаг 6.2: Проверка логов тестов
+      - name: Check test logs
+        run: |
+          docker logs test_framework_container
 
         # Шаг 8: Сохранение отчетов Playwright как артефактов
       - name: Upload Playwright reports
