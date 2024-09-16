@@ -49,20 +49,16 @@ jobs:
         run: |
           docker wait test_framework_container
 
-      # Шаг 7: Копирование и переименование отчетов смоук-тестов в папку docs
-      - name: Copy and rename smoke test reports to docs folder
+      # Шаг 7: Копирование отчетов смоук-тестов из контейнера
+      - name: Copy smoke test reports from container
         run: |
           mkdir -p playwright-reports/smoke
           docker cp test_framework_container:/app/playwright-report ./playwright-reports/smoke
-          cp ./playwright-reports/smoke/index.html reports-repo/docs/smoke-results.html
-          docker rm -f test_framework_container || true
 
-      # Шаг 8: Сохранение отчетов смоук-тестов как артефактов
-      - name: Upload smoke test reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: smoke-reports
-          path: ./playwright-reports/smoke
+      # Шаг 8: Удаление контейнера после смоук-тестов
+      - name: Remove smoke test container
+        run: |
+          docker rm -f test_framework_container || true
 
       # Шаг 9: Запуск санити-тестов
       - name: Run sanity tests
@@ -74,22 +70,25 @@ jobs:
         run: |
           docker wait test_framework_container
 
-      # Шаг 11: Копирование и переименование отчетов санити-тестов в папку docs
-      - name: Copy and rename sanity test reports to docs folder
+      # Шаг 11: Копирование отчетов санити-тестов из контейнера
+      - name: Copy sanity test reports from container
         run: |
           mkdir -p playwright-reports/sanity
           docker cp test_framework_container:/app/playwright-report ./playwright-reports/sanity
-          cp ./playwright-reports/sanity/index.html reports-repo/docs/sanity-results.html
+
+      # Шаг 12: Удаление контейнера после санити-тестов
+      - name: Remove sanity test container
+        run: |
           docker rm -f test_framework_container || true
 
-      # Шаг 12: Сохранение отчетов санити-тестов как артефактов
-      - name: Upload sanity test reports
+      # Шаг 13: Сохранение отчетов тестов как артефактов
+      - name: Upload test reports
         uses: actions/upload-artifact@v3
         with:
-          name: sanity-reports
-          path: ./playwright-reports/sanity
+          name: playwright-reports
+          path: playwright-reports/
 
-      # Шаг 13: Проверка репозитория для отчетов
+      # Шаг 14: Проверка репозитория для отчетов
       - name: Checkout reports repository
         uses: actions/checkout@v3
         with:
@@ -97,7 +96,15 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: reports-repo
 
-      # Шаг 14: Коммит и пуш отчетов
+      # Шаг 15: Копирование отчетов в папку docs
+      - name: Copy reports to docs folder
+        run: |
+          mkdir -p reports-repo/docs/smoke
+          mkdir -p reports-repo/docs/sanity
+          cp -r playwright-reports/smoke/* reports-repo/docs/smoke
+          cp -r playwright-reports/sanity/* reports-repo/docs/sanity
+
+      # Шаг 16: Коммит и пуш отчетов
       - name: Commit and push reports
         run: |
           cd reports-repo
@@ -107,24 +114,24 @@ jobs:
           git commit -m "Update reports"
           git push
 
-      # Шаг 15: Генерация ссылки на опубликованные отчеты для смоук-тестов
+      # Шаг 17: Генерация ссылки на опубликованные отчеты для смоук-тестов
       - name: Generate smoke test GitHub Pages URL
         id: smoke-page-url
         run: |
-          echo "GITHUB_SMOKE_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/smoke-results.html" >> $GITHUB_ENV
+          echo "GITHUB_SMOKE_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/docs/smoke/playwright-report" >> $GITHUB_ENV
 
-      # Шаг 16: Генерация ссылки на опубликованные отчеты для санити-тестов
+      # Шаг 18: Генерация ссылки на опубликованные отчеты для санити-тестов
       - name: Generate sanity test GitHub Pages URL
         id: sanity-page-url
         run: |
-          echo "GITHUB_SANITY_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/sanity-results.html" >> $GITHUB_ENV
+          echo "GITHUB_SANITY_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/docs/sanity/playwright-report" >> $GITHUB_ENV
 
-      # Шаг 17: Вывод ссылки на опубликованные отчеты для смоук-тестов
+      # Шаг 19: Вывод ссылки на опубликованные отчеты для смоук-тестов
       - name: Print smoke test GitHub Pages URL
         run: |
           echo "Smoke test reports are published at ${{ env.GITHUB_SMOKE_PAGES_URL }}"
 
-      # Шаг 18: Вывод ссылки на опубликованные отчеты для санити-тестов
+      # Шаг 20: Вывод ссылки на опубликованные отчеты для санити-тестов
       - name: Print sanity test GitHub Pages URL
         run: |
           echo "Sanity test reports are published at ${{ env.GITHUB_SANITY_PAGES_URL }}"
