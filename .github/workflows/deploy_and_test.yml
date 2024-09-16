@@ -52,6 +52,7 @@ jobs:
       # Шаг 7: Копирование и переименование отчетов смоук-тестов в папку docs
       - name: Copy and rename smoke test reports to docs folder
         run: |
+          mkdir -p playwright-reports
           docker cp test_framework_container:/app/playwright-report ./playwright-reports/smoke
           mkdir -p reports-repo/docs
           cp ./playwright-reports/smoke/index.html reports-repo/docs/smoke-results.html
@@ -70,6 +71,7 @@ jobs:
       # Шаг 10: Копирование и переименование отчетов санити-тестов в папку docs
       - name: Copy and rename sanity test reports to docs folder
         run: |
+          mkdir -p playwright-reports
           docker cp test_framework_container:/app/playwright-report ./playwright-reports/sanity
           cp ./playwright-reports/sanity/index.html reports-repo/docs/sanity-results.html
           docker rm -f test_framework_container || true
