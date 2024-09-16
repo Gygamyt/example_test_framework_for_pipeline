@@ -60,11 +60,6 @@ jobs:
         run: |
           docker ps -a
 
-      # Шаг 7: Проверка содержимого директории отчетов
-      - name: List report files
-        run: |
-          ls -la test-framework/reports/playwright-report
-
       # Шаг 8: Сохранение отчетов Playwright как артефактов
       - name: Upload Playwright reports
         uses: actions/upload-artifact@v3
