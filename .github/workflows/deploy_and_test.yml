@@ -48,11 +48,6 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: your_project.settings
 
-      # Шаг 6.1: Проверка состояния контейнеров
-      - name: List Docker containers
-        run: |
-          docker ps -a    
-
       # Шаг 6: Запуск тестов
       - name: Run tests
         run: |
@@ -60,42 +55,29 @@ jobs:
         env:
           BASE_URL: http://localhost:8000
 
-      # Шаг 6.1: Проверка состояния контейнеров
-      - name: List Docker containers
-        run: |
-          docker ps -a
-      
-
-    # Шаг 6.1: Копирование отчетов Playwright из контейнера
-      - name: Copy Playwright reports from container
-        run: |
-          docker cp test_framework_container:/app/playwright-report ./test-framework-reports
-      
-      
-
-        # Шаг 6.1: Проверка состояния контейнеров
-      - name: List Docker containers
-        run: |
-          docker ps -a
-
-      # Шаг 6.2: Ожидание завершения тестов
+      # Шаг 7: Ожидание завершения тестов
       - name: Wait for tests to complete
         run: |
           docker wait test_framework_container
 
-      # Шаг 6.2: Проверка логов тестов
+      # Шаг 8: Проверка логов тестов
       - name: Check test logs
         run: |
           docker logs test_framework_container
 
-        # Шаг 8: Сохранение отчетов Playwright как артефактов
+      # Шаг 9: Копирование отчетов Playwright из контейнера
+      - name: Copy Playwright reports from container
+        run: |
+          docker cp test_framework_container:/app/playwright-report ./test-framework-reports
+
+      # Шаг 10: Сохранение отчетов Playwright как артефактов
       - name: Upload Playwright reports
         uses: actions/upload-artifact@v3
         with:
           name: playwright-reports
           path: test-framework-reports/
 
-      # Шаг 9: Остановка и удаление контейнера сайта
+      # Шаг 11: Остановка и удаление контейнера сайта
       - name: Stop and remove website container
         run: |
           if [ $(docker ps -q -f name=website_container) ]; then
@@ -103,7 +85,7 @@ jobs:
             docker rm website_container
           fi
 
-      # Шаг 10: Остановка и удаление контейнера тестов
+      # Шаг 12: Остановка и удаление контейнера тестов
       - name: Stop and remove test framework container
         run: |
           if [ $(docker ps -q -f name=test_framework_container) ]; then
