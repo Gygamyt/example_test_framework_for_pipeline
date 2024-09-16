@@ -117,7 +117,7 @@ jobs:
       - name: Deploy reports to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_PAT }}
           publish_dir: reports-repo/docs
 
       # Шаг 17: Генерация ссылки на опубликованные отчеты для смоук-тестов
