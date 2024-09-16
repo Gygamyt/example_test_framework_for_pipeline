@@ -104,6 +104,13 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: reports-repo
 
+      - name: List contents
+        run: |
+          echo "Contents of playwright-reports:"
+          ls -l playwright-reports
+          echo "Contents of reports-repo/docs:"
+          ls -l reports-repo/docs
+
       # Шаг 3: Копирование отчетов в папку docs
       - name: Copy reports to docs folder
         run: |
