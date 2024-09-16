@@ -48,6 +48,11 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: your_project.settings
 
+      # Шаг 6.1: Проверка состояния контейнеров
+      - name: List Docker containers
+        run: |
+          docker ps -a    
+
       # Шаг 6: Запуск тестов
       - name: Run tests
         run: |
@@ -55,6 +60,11 @@ jobs:
         env:
           BASE_URL: http://localhost:8000
 
+      # Шаг 6.1: Проверка состояния контейнеров
+      - name: List Docker containers
+        run: |
+          docker ps -a
+      
 
       # Шаг 6.1: Проверка состояния директории отчетов после запуска тестов
       - name: Check report directory inside container
