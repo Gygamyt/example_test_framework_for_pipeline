@@ -6,4 +6,6 @@ WORKDIR /app
 
 RUN npm install
 
-CMD ["npx", "playwright", "test", "--reporter=html"]
+# Используем ENTRYPOINT и CMD для поддержки параметров запуска
+ENTRYPOINT ["npx", "playwright", "test"]
+CMD ["--reporter=html"]

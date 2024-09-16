@@ -17,7 +17,11 @@ test.describe('E2E UI', async () => {
         await page.close();
     })
 
-    test('Login test', async () => {
+    test('Login test @sanity', async () => {
+        await pageManager.header.clickOnSignUpElement()
+    })
+
+    test('Login test @smoke', async () => {
         await pageManager.header.clickOnSignUpElement()
     })
 })
