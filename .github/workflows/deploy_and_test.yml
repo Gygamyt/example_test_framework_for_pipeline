@@ -60,7 +60,13 @@ jobs:
         run: |
           docker ps -a
 
-      # Шаг 8: Сохранение отчетов Playwright как артефактов
+      # Шаг 6.2: Ожидание завершения тестов
+      - name: Wait for tests to complete
+        run: |
+          docker wait test_framework_container
+      
+
+        # Шаг 8: Сохранение отчетов Playwright как артефактов
       - name: Upload Playwright reports
         uses: actions/upload-artifact@v3
         with:
