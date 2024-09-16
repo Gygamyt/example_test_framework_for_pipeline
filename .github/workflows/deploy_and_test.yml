@@ -113,6 +113,13 @@ jobs:
           git commit -m "Update reports"
           git push
 
+      # Шаг 17: Публикация на GitHub Pages
+      - name: Deploy reports to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: reports-repo/docs
+
       # Шаг 17: Генерация ссылки на опубликованные отчеты для смоук-тестов
       - name: Generate smoke test GitHub Pages URL
         id: smoke-page-url
