@@ -51,21 +51,26 @@ jobs:
       # Шаг 6: Запуск тестов
       - name: Run tests
         run: |
-          docker run --network="host" --name test_framework_container test_framework_image:latest
+          docker run --network="host" --name test_framework_container -v ${{ github.workspace }}/test-framework/reports:/app/playwright-report test_framework_image:latest
         env:
           BASE_URL: http://localhost:8000
+
+      # Шаг 6.1: Проверка состояния контейнеров
+      - name: List Docker containers
+        run: |
+          docker ps -a
 
       # Шаг 7: Проверка содержимого директории отчетов
       - name: List report files
         run: |
-          ls -la test-framework/app/playwright-report
+          ls -la test-framework/reports/playwright-report
 
       # Шаг 8: Сохранение отчетов Playwright как артефактов
       - name: Upload Playwright reports
         uses: actions/upload-artifact@v3
         with:
           name: playwright-reports
-          path: test-framework/app/playwright-report/
+          path: test-framework/reports/playwright-report/
 
       # Шаг 9: Остановка и удаление контейнера сайта
       - name: Stop and remove website container
