@@ -55,6 +55,13 @@ jobs:
         env:
           BASE_URL: http://localhost:8000
 
+
+      # Шаг 6.1: Проверка состояния директории отчетов после запуска тестов
+      - name: Check report directory inside container
+        run: |
+          docker exec test_framework_container ls -la /app/playwright-report
+                  
+
       # Шаг 6.1: Проверка состояния контейнеров
       - name: List Docker containers
         run: |
