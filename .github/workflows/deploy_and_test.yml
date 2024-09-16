@@ -61,42 +61,22 @@ jobs:
       # Шаг 8: Копирование отчетов Playwright из контейнера
       - name: Copy Playwright reports from container
         run: |
-          docker cp test_framework_container:/app/playwright-report ./test-framework-reports
+          docker cp test_framework_container:/app/playwright-report ./playwright-reports
 
       # Шаг 9: Сохранение отчетов Playwright как артефактов
       - name: Upload Playwright reports
         uses: actions/upload-artifact@v3
         with:
           name: playwright-reports
-          path: test-framework-reports/
+          path: playwright-reports/
 
-      # Шаг 10: Остановка и удаление контейнера сайта
-      - name: Stop and remove website container
-        run: |
-          if [ $(docker ps -q -f name=website_container) ]; then
-            docker stop website_container
-            docker rm website_container
-          fi
-
-      # Шаг 11: Остановка и удаление контейнера тестов
-      - name: Stop and remove test framework container
-        run: |
-          if [ $(docker ps -q -f name=test_framework_container) ]; then
-            docker stop test_framework_container
-            docker rm test_framework_container
-          fi
-
-  publish-reports:
-    needs: deploy-and-test
-    runs-on: ubuntu-latest
-    steps:
-      # Шаг 1: Загрузка артефактов
+      # Шаг 10: Загрузка артефактов
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
           name: playwright-reports
 
-      # Шаг 2: Проверка репозитория для отчетов
+      # Шаг 11: Проверка репозитория для отчетов
       - name: Checkout reports repository
         uses: actions/checkout@v3
         with:
@@ -104,20 +84,13 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: reports-repo
 
-      - name: List contents
-        run: |
-          echo "Contents of playwright-reports:"
-          ls -l playwright-reports
-          echo "Contents of reports-repo/docs:"
-          ls -l reports-repo/docs
-
-      # Шаг 3: Копирование отчетов в папку docs
+      # Шаг 12: Копирование отчетов в папку docs
       - name: Copy reports to docs folder
         run: |
           mkdir -p reports-repo/docs
           cp -r playwright-reports/* reports-repo/docs
 
-      # Шаг 4: Коммит и пуш отчетов
+      # Шаг 13: Коммит и пуш отчетов
       - name: Commit and push reports
         run: |
           cd reports-repo
@@ -127,13 +100,13 @@ jobs:
           git commit -m "Update reports"
           git push
 
-      # Шаг 5: Генерация ссылки на опубликованные отчеты
+      # Шаг 14: Генерация ссылки на опубликованные отчеты
       - name: Generate GitHub Pages URL
         id: page-url
         run: |
           echo "GITHUB_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages" >> $GITHUB_ENV
 
-      # Шаг 6: Вывод ссылки на опубликованные отчеты
+      # Шаг 15: Вывод ссылки на опубликованные отчеты
       - name: Print GitHub Pages URL
         run: |
           echo "Reports are published at ${{ env.GITHUB_PAGES_URL }}"
