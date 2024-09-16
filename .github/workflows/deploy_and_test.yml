@@ -55,11 +55,6 @@ jobs:
         env:
           BASE_URL: http://localhost:8000
 
-      # Шаг 7: Ожидание завершения тестов
-      - name: Wait for tests to complete
-        run: |
-          docker wait test_framework_container
-
       # Шаг 8: Проверка логов тестов
       - name: Check test logs
         run: |
