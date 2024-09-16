@@ -100,8 +100,8 @@ jobs:
       - name: Copy and rename test reports to docs folder
         run: |
           mkdir -p reports-repo/docs
-          cp playwright-reports/smoke/index.html reports-repo/docs/smoke-results.html
-          cp playwright-reports/sanity/index.html reports-repo/docs/sanity-results.html
+          cp playwright-reports/smoke/playwright-report/index.html reports-repo/docs/smoke-results.html
+          cp playwright-reports/sanity/playwright-report/index.html reports-repo/docs/sanity-results.html
 
       # Шаг 16: Коммит и пуш отчетов
       - name: Commit and push reports
