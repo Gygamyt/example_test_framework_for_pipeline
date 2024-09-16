@@ -7,86 +7,76 @@ on:
       - main
 
 jobs:
-  cache:
+  deploy-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      # Шаг 1: Проверка репозиториев и создание кэша
+      # Шаг 1: Проверка репозитория с сайтом
+      - name: Checkout site repository
+        uses: actions/checkout@v3
+        with:
+          repository: Gygamyt/example_site_for_pipeline
+          path: site
+
+      # Шаг 2: Сборка и запуск контейнера с сайтом
+      - name: Build and run website container
+        run: |
+          docker build -t site_image:latest ./site
+          docker run -d --name site_container -p 8000:8000 site_image:latest
+
+      # Шаг 3: Проверка репозитория с тестами
       - name: Checkout test framework repository
         uses: actions/checkout@v3
         with:
           repository: Gygamyt/example_test_framework_for_pipeline
           path: test-framework
 
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: |
-            /tmp/docker-cache
-          key: ${{ runner.os }}-docker-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-docker-
-
-      - name: Build Docker image with caching
+      # Шаг 4: Сборка Docker-образа для тестов
+      - name: Build test framework Docker image
         run: |
-          docker buildx create --use
-          docker buildx build --cache-to=type=local,dest=/tmp/docker-cache --cache-from=type=local,src=/tmp/docker-cache -t test_image:latest .
+          cd test-framework
+          docker build -t test_framework_image:latest .
+        env:
+          DOCKER_BUILDKIT: 1
 
-  smoke-tests:
-    runs-on: ubuntu-latest
-    needs: cache
-
-    steps:
-      - name: Checkout repositories
-        uses: actions/checkout@v3
-
-      - name: Build Docker image
-        run: docker build -t test_image:latest .
-
+      # Шаг 5: Запуск смоук-тестов
       - name: Run smoke tests
-        run: docker run --name test_container test_image:latest --grep "smoke" --reporter=html
-
-      - name: Save smoke test results
         run: |
-          mkdir -p results/smoke
-          docker cp test_container:/results /results/smoke
+          docker run --network="host" --name test_framework_container -v ${{ github.workspace }}/test-framework/reports:/app/playwright-report test_framework_image:latest --grep "smoke" --reporter=html
 
-      - name: Upload smoke test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: smoke-results
-          path: results/smoke
+      # Шаг 6: Ожидание завершения смоук-тестов
+      - name: Wait for smoke tests to complete
+        run: |
+          docker wait test_framework_container
 
-  sanity-tests:
-    runs-on: ubuntu-latest
-    needs: [cache, smoke-tests]
+      # Шаг 7: Копирование отчетов смоук-тестов
+      - name: Copy smoke test reports from container
+        run: |
+          docker cp test_framework_container:/app/playwright-report ./playwright-reports/smoke
 
-    steps:
-      - name: Checkout repositories
-        uses: actions/checkout@v3
-
-      - name: Build Docker image
-        run: docker build -t test_image:latest .
-
+      # Шаг 8: Запуск санити-тестов
       - name: Run sanity tests
-        run: docker run --name test_container test_image:latest --grep "sanity" --reporter=html
-
-      - name: Save sanity test results
         run: |
-          mkdir -p results/sanity
-          docker cp test_container:/results /results/sanity
+          docker run --network="host" --name test_framework_container -v ${{ github.workspace }}/test-framework/reports:/app/playwright-report test_framework_image:latest --grep "sanity" --reporter=html
 
-      - name: Upload sanity test results
+      # Шаг 9: Ожидание завершения санити-тестов
+      - name: Wait for sanity tests to complete
+        run: |
+          docker wait test_framework_container
+
+      # Шаг 10: Копирование отчетов санити-тестов
+      - name: Copy sanity test reports from container
+        run: |
+          docker cp test_framework_container:/app/playwright-report ./playwright-reports/sanity
+
+      # Шаг 11: Сохранение отчетов тестов как артефактов
+      - name: Upload test reports
         uses: actions/upload-artifact@v3
         with:
-          name: sanity-results
-          path: results/sanity
+          name: playwright-reports
+          path: playwright-reports/
 
-  publish-reports:
-    runs-on: ubuntu-latest
-    needs: [smoke-tests, sanity-tests]
-
-    steps:
+      # Шаг 12: Проверка репозитория для отчетов
       - name: Checkout reports repository
         uses: actions/checkout@v3
         with:
@@ -94,27 +84,31 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: reports-repo
 
-      - name: Copy test results to reports
+      # Шаг 13: Копирование отчетов в папку docs
+      - name: Copy reports to docs folder
         run: |
           mkdir -p reports-repo/docs/smoke
           mkdir -p reports-repo/docs/sanity
-          cp -r results/smoke/* reports-repo/docs/smoke
-          cp -r results/sanity/* reports-repo/docs/sanity
+          cp -r playwright-reports/smoke/* reports-repo/docs/smoke
+          cp -r playwright-reports/sanity/* reports-repo/docs/sanity
 
+      # Шаг 14: Коммит и пуш отчетов
       - name: Commit and push reports
         run: |
           cd reports-repo
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add .
-          git commit -m "Update test results"
+          git commit -m "Update reports"
           git push
 
+      # Шаг 15: Генерация ссылки на опубликованные отчеты
       - name: Generate GitHub Pages URL
         id: page-url
         run: |
           echo "GITHUB_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages" >> $GITHUB_ENV
 
+      # Шаг 16: Вывод ссылки на опубликованные отчеты
       - name: Print GitHub Pages URL
         run: |
           echo "Reports are published at ${{ env.GITHUB_PAGES_URL }}"
