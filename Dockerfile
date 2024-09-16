@@ -6,4 +6,4 @@ WORKDIR /app
 
 RUN npm install
 
-CMD ["sh", "-c", "npx playwright test && tail -f /dev/null"]
+CMD ["npx", "playwright", "test", "--reporter=html"]
