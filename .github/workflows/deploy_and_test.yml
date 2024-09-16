@@ -90,7 +90,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
-      # Шаг 1: Проверка репозитория для отчетов
+      # Шаг 1: Загрузка артефактов
+      - name: Download Playwright reports
+        uses: actions/download-artifact@v3
+        with:
+          name: playwright-reports
+
+      # Шаг 2: Проверка репозитория для отчетов
       - name: Checkout reports repository
         uses: actions/checkout@v3
         with:
@@ -98,13 +104,13 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: reports-repo
 
-      # Шаг 2: Копирование отчетов в папку docs
+      # Шаг 3: Копирование отчетов в папку docs
       - name: Copy reports to docs folder
         run: |
           mkdir -p reports-repo/docs
-          cp -r test-framework-reports/* reports-repo/docs
+          cp -r playwright-reports/* reports-repo/docs
 
-      # Шаг 3: Коммит и пуш отчетов
+      # Шаг 4: Коммит и пуш отчетов
       - name: Commit and push reports
         run: |
           cd reports-repo
@@ -114,13 +120,13 @@ jobs:
           git commit -m "Update reports"
           git push
 
-      # Шаг 4: Генерация ссылки на опубликованные отчеты
+      # Шаг 5: Генерация ссылки на опубликованные отчеты
       - name: Generate GitHub Pages URL
         id: page-url
         run: |
           echo "GITHUB_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages" >> $GITHUB_ENV
 
-      # Шаг 5: Вывод ссылки на опубликованные отчеты
+      # Шаг 6: Вывод ссылки на опубликованные отчеты
       - name: Print GitHub Pages URL
         run: |
           echo "Reports are published at ${{ env.GITHUB_PAGES_URL }}"
