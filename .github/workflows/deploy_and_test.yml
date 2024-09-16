@@ -97,12 +97,11 @@ jobs:
           path: reports-repo
 
       # Шаг 15: Копирование отчетов в папку docs
-      - name: Copy reports to docs folder
+      - name: Copy and rename test reports to docs folder
         run: |
-          mkdir -p reports-repo/docs/smoke
-          mkdir -p reports-repo/docs/sanity
-          cp -r playwright-reports/smoke/* reports-repo/docs/smoke
-          cp -r playwright-reports/sanity/* reports-repo/docs/sanity
+          mkdir -p reports-repo/docs
+          cp playwright-reports/smoke/index.html reports-repo/docs/smoke-results.html
+          cp playwright-reports/sanity/index.html reports-repo/docs/sanity-results.html
 
       # Шаг 16: Коммит и пуш отчетов
       - name: Commit and push reports
@@ -118,13 +117,13 @@ jobs:
       - name: Generate smoke test GitHub Pages URL
         id: smoke-page-url
         run: |
-          echo "GITHUB_SMOKE_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/docs/smoke/playwright-report" >> $GITHUB_ENV
+          echo "GITHUB_SMOKE_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/docs/smoke-results.html" >> $GITHUB_ENV
 
       # Шаг 18: Генерация ссылки на опубликованные отчеты для санити-тестов
       - name: Generate sanity test GitHub Pages URL
         id: sanity-page-url
         run: |
-          echo "GITHUB_SANITY_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/docs/sanity/playwright-report" >> $GITHUB_ENV
+          echo "GITHUB_SANITY_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/docs/sanity-results.html" >> $GITHUB_ENV
 
       # Шаг 19: Вывод ссылки на опубликованные отчеты для смоук-тестов
       - name: Print smoke test GitHub Pages URL
