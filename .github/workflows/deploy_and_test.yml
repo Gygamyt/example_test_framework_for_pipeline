@@ -27,9 +27,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-docker-
 
-      - name: Save Docker layers to cache
+      - name: Build Docker image with caching
         run: |
-          docker buildx build --cache-to=type=local,dest=/tmp/docker-cache --cache-from=type=local,src=/tmp/docker-cache
+          docker buildx create --use
+          docker buildx build --cache-to=type=local,dest=/tmp/docker-cache --cache-from=type=local,src=/tmp/docker-cache -t test_image:latest .
 
   smoke-tests:
     runs-on: ubuntu-latest
