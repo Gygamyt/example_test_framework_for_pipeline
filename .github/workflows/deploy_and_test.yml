@@ -82,6 +82,34 @@ jobs:
       - name: Stop and remove test framework container
         run: |
           if [ $(docker ps -q -f name=test_framework_container) ]; then
-            docker stop test_framework_container
-            docker rm test_framework_container
+          docker stop test_framework_container
+          docker rm test_framework_container
           fi
+
+      # Шаг 10: Очистка старых отчетов (опционально)
+      - name: Clean old reports
+        run: |
+          cd test-framework-reports
+          find . -type f -mtime +7 -exec rm {} \;
+
+      # Шаг 11: Публикация отчетов на GitHub Pages
+      - name: Checkout reports repository
+        uses: actions/checkout@v3
+        with:
+          repository: Gygamyt/example_reports_gh_pages
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: reports-repo
+
+      - name: Copy reports to docs folder
+        run: |
+          mkdir -p reports-repo/docs
+          cp -r test-framework-reports/* reports-repo/docs
+
+      - name: Commit and push reports
+        run: |
+          cd reports-repo
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Update reports"
+          git push
