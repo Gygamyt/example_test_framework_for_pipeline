@@ -54,7 +54,6 @@ jobs:
         run: |
           mkdir -p playwright-reports/smoke
           docker cp test_framework_container:/app/playwright-report ./playwright-reports/smoke
-          mkdir -p reports-repo/docs
           cp ./playwright-reports/smoke/index.html reports-repo/docs/smoke-results.html
           docker rm -f test_framework_container || true
 
@@ -62,30 +61,20 @@ jobs:
       - name: Upload smoke test reports
         uses: actions/upload-artifact@v3
         with:
-          name: smoke-test-reports
-          path: playwright-reports/smoke/
+          name: smoke-reports
+          path: ./playwright-reports/smoke
 
-      # Шаг 9: Коммит и пуш отчетов смоук-тестов
-      - name: Commit and push smoke test reports
-        run: |
-          cd reports-repo
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add docs/smoke-results.html
-          git commit -m "Update smoke test reports"
-          git push
-
-      # Шаг 10: Запуск санити-тестов
+      # Шаг 9: Запуск санити-тестов
       - name: Run sanity tests
         run: |
           docker run --network="host" --name test_framework_container -v ${{ github.workspace }}/test-framework/reports:/app/playwright-report test_framework_image:latest --grep "sanity" --reporter=html
 
-      # Шаг 11: Ожидание завершения санити-тестов
+      # Шаг 10: Ожидание завершения санити-тестов
       - name: Wait for sanity tests to complete
         run: |
           docker wait test_framework_container
 
-      # Шаг 12: Копирование и переименование отчетов санити-тестов в папку docs
+      # Шаг 11: Копирование и переименование отчетов санити-тестов в папку docs
       - name: Copy and rename sanity test reports to docs folder
         run: |
           mkdir -p playwright-reports/sanity
@@ -93,21 +82,29 @@ jobs:
           cp ./playwright-reports/sanity/index.html reports-repo/docs/sanity-results.html
           docker rm -f test_framework_container || true
 
-      # Шаг 13: Сохранение отчетов санити-тестов как артефактов
+      # Шаг 12: Сохранение отчетов санити-тестов как артефактов
       - name: Upload sanity test reports
         uses: actions/upload-artifact@v3
         with:
-          name: sanity-test-reports
-          path: playwright-reports/sanity/
+          name: sanity-reports
+          path: ./playwright-reports/sanity
 
-      # Шаг 14: Коммит и пуш отчетов санити-тестов
-      - name: Commit and push sanity test reports
+      # Шаг 13: Проверка репозитория для отчетов
+      - name: Checkout reports repository
+        uses: actions/checkout@v3
+        with:
+          repository: Gygamyt/example_reports_gh_pages
+          token: ${{ secrets.GH_PAT }}
+          path: reports-repo
+
+      # Шаг 14: Коммит и пуш отчетов
+      - name: Commit and push reports
         run: |
           cd reports-repo
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add docs/sanity-results.html
-          git commit -m "Update sanity test reports"
+          git add .
+          git commit -m "Update reports"
           git push
 
       # Шаг 15: Генерация ссылки на опубликованные отчеты для смоук-тестов
