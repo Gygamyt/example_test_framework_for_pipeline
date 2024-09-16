@@ -82,17 +82,15 @@ jobs:
       - name: Stop and remove test framework container
         run: |
           if [ $(docker ps -q -f name=test_framework_container) ]; then
-          docker stop test_framework_container
-          docker rm test_framework_container
+            docker stop test_framework_container
+            docker rm test_framework_container
           fi
 
-      # Шаг 10: Очистка старых отчетов (опционально)
-      - name: Clean old reports
-        run: |
-          cd test-framework-reports
-          find . -type f -mtime +7 -exec rm {} \;
-
-      # Шаг 11: Публикация отчетов на GitHub Pages
+  publish-reports:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      # Шаг 1: Проверка репозитория для отчетов
       - name: Checkout reports repository
         uses: actions/checkout@v3
         with:
@@ -100,11 +98,13 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: reports-repo
 
+      # Шаг 2: Копирование отчетов в папку docs
       - name: Copy reports to docs folder
         run: |
           mkdir -p reports-repo/docs
           cp -r test-framework-reports/* reports-repo/docs
 
+      # Шаг 3: Коммит и пуш отчетов
       - name: Commit and push reports
         run: |
           cd reports-repo
@@ -113,3 +113,14 @@ jobs:
           git add .
           git commit -m "Update reports"
           git push
+
+      # Шаг 4: Генерация ссылки на опубликованные отчеты
+      - name: Generate GitHub Pages URL
+        id: page-url
+        run: |
+          echo "GITHUB_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages" >> $GITHUB_ENV
+
+      # Шаг 5: Вывод ссылки на опубликованные отчеты
+      - name: Print GitHub Pages URL
+        run: |
+          echo "Reports are published at ${{ env.GITHUB_PAGES_URL }}"
