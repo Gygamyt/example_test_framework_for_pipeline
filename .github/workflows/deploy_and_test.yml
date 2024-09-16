@@ -66,13 +66,14 @@ jobs:
           docker ps -a
       
 
-#      # Шаг 6.1: Проверка состояния директории отчетов после запуска тестов
-#      - name: Check report directory inside container
-#        run: |
-#          docker exec test_framework_container ls -la /app/playwright-report
-                  
+    # Шаг 6.1: Копирование отчетов Playwright из контейнера
+      - name: Copy Playwright reports from container
+        run: |
+          docker cp test_framework_container:/app/playwright-report ./test-framework-reports
+      
+      
 
-      # Шаг 6.1: Проверка состояния контейнеров
+        # Шаг 6.1: Проверка состояния контейнеров
       - name: List Docker containers
         run: |
           docker ps -a
@@ -92,7 +93,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: playwright-reports
-          path: test-framework/reports/playwright-report/
+          path: test-framework-reports/
 
       # Шаг 9: Остановка и удаление контейнера сайта
       - name: Stop and remove website container
