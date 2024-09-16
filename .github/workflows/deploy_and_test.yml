@@ -52,7 +52,7 @@ jobs:
       # Шаг 7: Копирование отчетов смоук-тестов из контейнера
       - name: Copy smoke test reports from container
         run: |
-          mkdir -p playwright-reports/smoke
+          mkdir -p playwright-reports
           docker cp test_framework_container:/app/playwright-report ./playwright-reports/smoke
 
       # Шаг 8: Удаление контейнера после смоук-тестов
@@ -73,7 +73,7 @@ jobs:
       # Шаг 11: Копирование отчетов санити-тестов из контейнера
       - name: Copy sanity test reports from container
         run: |
-          mkdir -p playwright-reports/sanity
+          mkdir -p playwright-reports
           docker cp test_framework_container:/app/playwright-report ./playwright-reports/sanity
 
       # Шаг 12: Удаление контейнера после санити-тестов
@@ -99,12 +99,17 @@ jobs:
       # Шаг 15: Копирование отчетов в папку docs
       - name: Copy reports to docs folder
         run: |
-          mkdir -p reports-repo/docs/smoke
-          mkdir -p reports-repo/docs/sanity
-          cp -r playwright-reports/smoke/* reports-repo/docs/smoke
-          cp -r playwright-reports/sanity/* reports-repo/docs/sanity
+          mkdir -p reports-repo/docs
+          cp playwright-reports/smoke/* reports-repo/docs/
+          cp playwright-reports/sanity/* reports-repo/docs/
 
-      # Шаг 16: Коммит и пуш отчетов
+      # Шаг 16: Переименование отчетов в папке docs
+      - name: Rename test reports
+        run: |
+          mv reports-repo/docs/index.html reports-repo/docs/smoke-results.html
+          mv reports-repo/docs/index.html reports-repo/docs/sanity-results.html
+
+      # Шаг 17: Коммит и пуш отчетов
       - name: Commit and push reports
         run: |
           cd reports-repo
@@ -114,24 +119,24 @@ jobs:
           git commit -m "Update reports"
           git push
 
-      # Шаг 17: Генерация ссылки на опубликованные отчеты для смоук-тестов
+      # Шаг 18: Генерация ссылки на опубликованные отчеты для смоук-тестов
       - name: Generate smoke test GitHub Pages URL
         id: smoke-page-url
         run: |
-          echo "GITHUB_SMOKE_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/docs/smoke" >> $GITHUB_ENV
+          echo "GITHUB_SMOKE_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/smoke-results.html" >> $GITHUB_ENV
 
-      # Шаг 18: Генерация ссылки на опубликованные отчеты для санити-тестов
+      # Шаг 19: Генерация ссылки на опубликованные отчеты для санити-тестов
       - name: Generate sanity test GitHub Pages URL
         id: sanity-page-url
         run: |
-          echo "GITHUB_SANITY_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/docs/sanity" >> $GITHUB_ENV
+          echo "GITHUB_SANITY_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/sanity-results.html" >> $GITHUB_ENV
 
-      # Шаг 19: Вывод ссылки на опубликованные отчеты для смоук-тестов
+      # Шаг 20: Вывод ссылки на опубликованные отчеты для смоук-тестов
       - name: Print smoke test GitHub Pages URL
         run: |
           echo "Smoke test reports are published at ${{ env.GITHUB_SMOKE_PAGES_URL }}"
 
-      # Шаг 20: Вывод ссылки на опубликованные отчеты для санити-тестов
+      # Шаг 21: Вывод ссылки на опубликованные отчеты для санити-тестов
       - name: Print sanity test GitHub Pages URL
         run: |
           echo "Sanity test reports are published at ${{ env.GITHUB_SANITY_PAGES_URL }}"
