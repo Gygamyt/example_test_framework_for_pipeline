@@ -11,6 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Шаг 0: Установка playwright-merge-reports
+      - name: Install playwright-merge-reports
+        run: npm install -g playwright-merge-reports
+
       # Шаг 1: Проверка репозитория с сайтом
       - name: Checkout site repository
         uses: actions/checkout@v3
