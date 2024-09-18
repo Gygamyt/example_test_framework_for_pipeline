@@ -81,24 +81,13 @@ jobs:
         run: |
           docker rm -f test_framework_container || true
 
-      # Шаг 13: Установка `playwright-merge-reports` в основной среде
-      - name: Install playwright-merge-reports
+      # Шаг 13: Копирование HTML-шаблона для объединения отчетов
+      - name: Copy combined report template
         run: |
-          npm install -g playwright-merge-reports
+          mkdir -p playwright-reports/merged-report
+          cp ./ci-templates/combined-report-template.html playwright-reports/merged-report/index.html
 
-      # Шаг 14: Объединение отчетов
-      - name: Merge Playwright reports
-        run: |
-          npx playwright-merge-reports playwright-reports/smoke playwright-reports/sanity --output=playwright-reports/merged-report
-
-      # Шаг 15: Сохранение объединенного отчета как артефакт
-      - name: Upload merged test report
-        uses: actions/upload-artifact@v3
-        with:
-          name: merged-report
-          path: playwright-reports/merged-report
-
-      # Шаг 16: Проверка репозитория для отчетов
+      # Шаг 14: Проверка репозитория для отчетов
       - name: Checkout reports repository
         uses: actions/checkout@v3
         with:
@@ -106,13 +95,13 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: reports-repo
 
-      # Шаг 17: Копирование отчетов в папку docs
+      # Шаг 15: Копирование отчетов в папку docs
       - name: Copy and rename test reports to docs folder
         run: |
           mkdir -p reports-repo/docs
           cp playwright-reports/merged-report/index.html reports-repo/docs/index.html
 
-      # Шаг 18: Коммит и пуш отчетов
+      # Шаг 16: Коммит и пуш отчетов
       - name: Commit and push reports
         run: |
           cd reports-repo
@@ -122,20 +111,20 @@ jobs:
           git commit -m "Update reports"
           git push
 
-      # Шаг 19: Публикация на GitHub Pages
+      # Шаг 17: Публикация на GitHub Pages
       - name: Deploy reports to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GH_PAT }}
           publish_dir: reports-repo/docs
 
-      # Шаг 20: Генерация ссылки на опубликованные отчеты
+      # Шаг 18: Генерация ссылки на опубликованные отчеты
       - name: Generate GitHub Pages URL
         id: page-url
         run: |
           echo "GITHUB_PAGES_URL=https://Gygamyt.github.io/example_reports_gh_pages/" >> $GITHUB_ENV
 
-      # Шаг 21: Вывод ссылки на опубликованные отчеты
+      # Шаг 19: Вывод ссылки на опубликованные отчеты
       - name: Print GitHub Pages URL
         run: |
           echo "Reports are published at ${{ env.GITHUB_PAGES_URL }}"

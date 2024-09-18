@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <title>Combined Test Reports</title>
+</head>
+<body>
+<h1>Combined Test Reports</h1>
+<div>
+    <h2>Smoke Test Report</h2>
+    <div id='smoke-report'>Loading...</div>
+</div>
+<div>
+    <h2>Sanity Test Report</h2>
+    <div id='sanity-report'>Loading...</div>
+</div>
+<script>
+    function loadReport(reportPath, elementId) {
+        fetch(reportPath)
+            .then(response => response.text())
+            .then(html => document.getElementById(elementId).innerHTML = html)
+            .catch(() => document.getElementById(elementId).innerHTML = 'Failed to load report');
+    }
+    loadReport('../smoke/index.html', 'smoke-report');
+    loadReport('../sanity/index.html', 'sanity-report');
+</script>
+</body>
+</html>
