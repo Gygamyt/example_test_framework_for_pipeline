@@ -55,37 +55,42 @@ jobs:
           mkdir -p playwright-reports/smoke
           docker cp test_framework_container:/app/playwright-report ./playwright-reports/smoke
 
-      # Шаг 8: Удаление контейнера после смоук-тестов
-      - name: Remove smoke test container
-        run: |
-          docker rm -f test_framework_container || true
-
-      # Шаг 9: Запуск санити-тестов
+      # Шаг 8: Запуск санити-тестов
       - name: Run sanity tests
         run: |
           docker run --network="host" --name test_framework_container -v ${{ github.workspace }}/test-framework/reports:/app/playwright-report test_framework_image:latest --grep "sanity" --reporter=html
 
-      # Шаг 10: Ожидание завершения санити-тестов
+      # Шаг 9: Ожидание завершения санити-тестов
       - name: Wait for sanity tests to complete
         run: |
           docker wait test_framework_container
 
-      # Шаг 11: Копирование отчетов санити-тестов из контейнера
+      # Шаг 10: Копирование отчетов санити-тестов из контейнера
       - name: Copy sanity test reports from container
         run: |
           mkdir -p playwright-reports/sanity
           docker cp test_framework_container:/app/playwright-report ./playwright-reports/sanity
 
-      # Шаг 12: Удаление контейнера после санити-тестов
-      - name: Remove sanity test container
+      # Шаг 11: Удаление контейнера после тестов
+      - name: Remove test container
         run: |
           docker rm -f test_framework_container || true
 
-      # Шаг 13: Копирование HTML-шаблона для объединения отчетов
-      - name: Copy combined report template
+      # Шаг 12: Создание объединенного отчета
+      - name: Create merged report
         run: |
           mkdir -p playwright-reports/merged-report
-          cp ./ci-templates/combined-report-template.html playwright-reports/merged-report/index.html
+          cp ./ci-templates/combined-report-template.html ./playwright-reports/merged-report/index.html
+          # Объединение отчетов в финальный отчет
+          sed -i "s|Loading Smoke Test Report...|$(cat playwright-reports/smoke/index.html)|" playwright-reports/merged-report/index.html
+          sed -i "s|Loading Sanity Test Report...|$(cat playwright-reports/sanity/index.html)|" playwright-reports/merged-report/index.html
+
+      # Шаг 13: Сохранение объединенного отчета как артефакт
+      - name: Upload merged test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: merged-report
+          path: playwright-reports/merged-report
 
       # Шаг 14: Проверка репозитория для отчетов
       - name: Checkout reports repository
