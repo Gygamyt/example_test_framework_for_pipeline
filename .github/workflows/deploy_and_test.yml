@@ -65,13 +65,11 @@ jobs:
         run: |
           docker rm -f test_framework_container || true
 
-      # Шаг 10: Создание отчета
+      # Шаг 10: Создание отчета без шаблона
       - name: Create sanity report
         run: |
           mkdir -p playwright-reports/merged-report
-          cp ./ci-templates/combined-report-template.html ./playwright-reports/merged-report/index.html
-          # Объединение отчетов в финальный отчет
-          sed -i "s|Loading Sanity Test Report...|$(cat playwright-reports/sanity/index.html)|" playwright-reports/merged-report/index.html
+          cp playwright-reports/sanity/index.html playwright-reports/merged-report/index.html
 
       # Шаг 11: Сохранение отчета как артефакт
       - name: Upload sanity test report
