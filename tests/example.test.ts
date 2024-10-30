@@ -1,4 +1,4 @@
-import {test, expect} from '@playwright/test';
+import {test} from '@playwright/test';
 import {Page} from "playwright/test";
 import {PageManager} from "../src/PageManager";
 
@@ -25,4 +25,3 @@ test.describe('E2E UI', async () => {
         await pageManager.header.clickOnSignUpElement()
     })
 })
-
